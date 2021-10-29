@@ -12,6 +12,9 @@ namespace Garth.Modules
         [Command("pls")]
         public Task pls([Remainder]string text = null)
         {
+            if (text != null)
+                return Task.CompletedTask;
+
             string[] phrases = new[] { 
                 "so",
                 "go work on khronos",
@@ -25,7 +28,10 @@ namespace Garth.Modules
                 "Gay Dragon Boys and the Holy Grail",
                 "You shouldn't follow your dreams",
                 "Ask me in tutorial",
-                "We'll discuss that in tutorial"
+                "We'll discuss that in tutorial",
+                "Java stole this from C++",
+                "Stroupstrup is a genius",
+                "C++20 guys are spoiled"
             };
             int item = new Random().Next(0, phrases.Length);
             ReplyAsync(phrases[item]);

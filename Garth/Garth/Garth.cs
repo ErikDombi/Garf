@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Garth
@@ -28,6 +29,20 @@ namespace Garth
             {
                 _client = services.GetRequiredService<DiscordSocketClient>();
                 _configuration = services.GetRequiredService<Configuration>();
+                var tags = services.GetRequiredService<TagService>();
+
+                _client.MessageReceived += (message) =>
+                {
+                    foreach (Match match in Regex.Matches(message.Content, "\\$+([A-Za-z0-9!.#@$%^&()]+)"))
+                    {
+                        var tag = tags.Data.FirstOrDefault(x => x.Name.Equals(match.Groups[1].ToString(), StringComparison.CurrentCultureIgnoreCase));
+                        if (tag == null)
+                            continue;
+
+                        message.Channel.SendMessageAsync(tag.Content);
+                    }
+                    return Task.CompletedTask;
+                };
 
                 _client.Log += Log;
 
