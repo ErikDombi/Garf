@@ -4,16 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Garth.Services;
 
 namespace Garth.Modules
 {
     public class MagicModule : ModuleBase<SocketCommandContext>
     {
+        public ReplyTrackerService? _replyTracker { get; set; }
+
         [Command("magic")]
         [Alias("magik", "magic8", "magik8", "m8")]
         public async Task magic([Remainder] string text = null)
         {
-            var msg = await ReplyAsync("Calculating...");
+            var msg = await _replyTracker.SmartReplyAsync(Context, "Calculating...");
             await Task.Delay(1000);
 
             string[] phrases = new[] {

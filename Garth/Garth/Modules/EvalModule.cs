@@ -12,6 +12,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Garth.Models;
+using Garth.Services;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Newtonsoft.Json;
@@ -21,6 +22,7 @@ namespace Garth.Modules
     public class EvalModule : ModuleBase<SocketCommandContext>
     {
         public Configuration? _configuration { get; set; }
+        public ReplyTrackerService? _replyTracker { get; set; }
 
         private async Task<object> Evaluate(string input)
         {
@@ -83,7 +85,7 @@ namespace Garth.Modules
                     .WithTimestamp(DateTime.Now)
                     .WithColor(new Color(85, 217, 76));
 
-                await ReplyAsync("", embed: builder.Build());
+                await _replyTracker.SmartReplyAsync(Context, "", embed: builder.Build());
             }
             catch (Exception ex)
             {
@@ -93,7 +95,7 @@ namespace Garth.Modules
                     .WithTimestamp(DateTime.Now)
                     .WithColor(new Color(235, 52, 58));
 
-                await ReplyAsync("", embed: builder.Build());
+                await _replyTracker.SmartReplyAsync(Context, "", embed: builder.Build());
             }
         }
 
@@ -123,7 +125,7 @@ namespace Garth.Modules
                     .WithTimestamp(DateTime.Now)
                     .WithColor(new Color(85, 217, 76));
 
-                await ReplyAsync("", embed: builder.Build());
+                await _replyTracker.SmartReplyAsync(Context, "", embed: builder.Build());
             }
             catch (Exception ex)
             {
@@ -133,7 +135,7 @@ namespace Garth.Modules
                     .WithTimestamp(DateTime.Now)
                     .WithColor(new Color(235, 52, 58));
 
-                await ReplyAsync("", embed: builder.Build());
+                await _replyTracker.SmartReplyAsync(Context, "", embed: builder.Build());
             }
         }
     }

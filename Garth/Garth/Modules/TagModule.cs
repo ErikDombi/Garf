@@ -17,6 +17,8 @@ namespace Garth.Modules
         public TagService? TagService { get; set; }
         public DiscordSocketClient? _client { get; set; }
         public Configuration? _configuration { get; set; }
+        public ReplyTrackerService? _replyTracker { get; set; }
+        public PaginationReplyTracker<TagService> _paginationService { get; set; }
 
         private Embed error(string msg)
         {
@@ -28,49 +30,49 @@ namespace Garth.Modules
 
         [Command("tag")]
         [Alias("t")]
-        public Task TagCommand(string subcmd, string name = null, [Remainder] string? text = null)
+        public async Task TagCommand(string subcmd, string name = null, [Remainder] string? text = null)
         {
             if(subcmd.Equals("create", StringComparison.OrdinalIgnoreCase) || subcmd.Equals("add", StringComparison.OrdinalIgnoreCase)) {
                 if(name == null)
                 {
-                    ReplyAsync("**You need to supply a name for the tag!**");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "**You need to supply a name for the tag!**");
+                    return;
                 }
 
                 if(new string[] {"create", "delete", "info", "edit", "search", "add", "remove"}.Contains(name.ToLower()))
                 {
-                    ReplyAsync("**Invalid tag name!**");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "**Invalid tag name!**");
+                    return;
                 }
 
                 if(text == null)
                 {
-                    ReplyAsync("**You need to supply a value for the tag!**");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "**You need to supply a value for the tag!**");
+                    return;
                 }
 
                 if(Regex.IsMatch(name, "[^A-Za-z0-9!.#@$%^&()]"))
                 {
-                    ReplyAsync("**Invalid tag name!**");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "**Invalid tag name!**");
+                    return;
                 }
 
                 if(Regex.IsMatch(name, "<@![0-9]{18}>"))
                 {
-                    ReplyAsync("**Illegal mention in tag name!**");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "**Illegal mention in tag name!**");
+                    return;
                 }
 
                 if (Regex.IsMatch(text, "<@![0-9]{18}>"))
                 {
-                    ReplyAsync("**Illegal mention in tag content!**");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "**Illegal mention in tag content!**");
+                    return;
                 }
 
                 if (TagService!.Data.Any(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
                 {
-                    ReplyAsync("A tag with that name already exists!");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "A tag with that name already exists!");
+                    return;
                 }
 
                 TagService!.Data.Add(new Tag
@@ -87,19 +89,19 @@ namespace Garth.Modules
             {
                 if (name == null)
                 {
-                    ReplyAsync("**You need to supply a tag name!**");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "**You need to supply a tag name!**");
+                    return;
                 }
                 var tag = TagService!.Data.FirstOrDefault(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
                 if(tag == null)
                 {
-                    ReplyAsync(tag != null ? tag.Content : "**Tag not found!**");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, tag != null ? tag.Content : "**Tag not found!**");
+                    return;
                 }
                 if(tag.CreatorId != Context.User.Id && (Context.User.Id != _configuration?.BotOwnerId))
                 {
-                    ReplyAsync("**You do not have permission to delete this tag!");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "**You do not have permission to delete this tag!");
+                    return;
                 }
                 TagService.Data.Remove(tag);
                 TagService.Save();
@@ -109,25 +111,25 @@ namespace Garth.Modules
             {
                 if (name == null)
                 {
-                    ReplyAsync("**You need to supply a tag name!**");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "**You need to supply a tag name!**");
+                    return;
                 }
                 var tag = TagService!.Data.FirstOrDefault(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
                 if (tag == null)
                 {
-                    ReplyAsync(embed: error("**Tag not found!**"));
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, embed: error("**Tag not found!**"));
+                    return;
                 }
                 if (tag.CreatorId != Context.User.Id && (Context.User.Id != _configuration?.BotOwnerId))
                 {
-                    ReplyAsync(embed: error("**You do not have permission to edit this tag!"));
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, embed: error("**You do not have permission to edit this tag!"));
+                    return;
                 }
 
                 if (text == null)
                 {
-                    ReplyAsync(embed: error("**You need to supply a value for the tag!**"));
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, embed: error("**You need to supply a value for the tag!**"));
+                    return;
                 }
 
                 tag.Content = text;
@@ -138,14 +140,14 @@ namespace Garth.Modules
             {
                 if (name == null)
                 {
-                    ReplyAsync("**You need to supply a tag name!**");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "**You need to supply a tag name!**");
+                    return;
                 }
                 var tag = TagService!.Data.FirstOrDefault(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
                 if (tag == null)
                 {
-                    ReplyAsync(tag != null ? tag.Content : "**Tag not found!**");
-                    return Task.CompletedTask;
+                    _replyTracker.SmartReplyAsync(Context, tag != null ? tag.Content : "**Tag not found!**");
+                    return;
                 }
 
                 EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -153,21 +155,45 @@ namespace Garth.Modules
                 embedBuilder.WithTitle(tag.Name);
                 embedBuilder.WithDescription($"```{tag.Content}```");
                 embedBuilder.WithFooter(tag.CreationDate);
-                ReplyAsync(embed: embedBuilder.Build());
+                _replyTracker.SmartReplyAsync(Context, embed: embedBuilder.Build());
             }
             else if (subcmd.Equals("search", StringComparison.OrdinalIgnoreCase) || subcmd.Equals("find", StringComparison.OrdinalIgnoreCase))
             {
                 if (name == null)
                 {
-                    ReplyAsync("**You need to supply a tag name!**");
-                    return Task.CompletedTask;
+                    var reply = await _paginationService.SmartReplyAsync(Context, TagService, (tags, page) =>
+                    {
+                        StringBuilder responseString =
+                            new StringBuilder(
+                                $"List of Garth tags (Page {page + 1} of {Math.Ceiling(tags.Data.Count / 10.0)})");
+
+                        int startIndex = page * 10;
+                        if (startIndex >= tags.Data.Count)
+                            return "";
+
+                        responseString.AppendLine("```d\n");
+
+                        var pageTags = tags.Data.Skip(startIndex).Take(10).ToList();
+                        for (int i = 0; i < pageTags.Count; ++i)
+                        {
+                            responseString.AppendLine($"[{startIndex + i + 1}] {pageTags[i].Name}");
+                        }
+
+                        responseString.AppendLine("```");
+
+                        return responseString.ToString();
+                    });
+
+                    await reply.AddReactionAsync(new Emoji("◀️"));
+                    await reply.AddReactionAsync(new Emoji("▶️"));
+                    return;
                 }
 
                 var tags = TagService!.Data.Where(t => t.Name.ToLower().Contains(name.ToLower())).Take(10).OrderBy(t => t.Name.Length).ToList();
                 if(tags.Count == 0)
                 {
-                    ReplyAsync("**No tags found!**");
-                    return Task.CompletedTask;
+                    await _replyTracker.SmartReplyAsync(Context, "**No tags found!**");
+                    return;
                 }
 
                 StringBuilder sb = new StringBuilder();
@@ -177,15 +203,15 @@ namespace Garth.Modules
                     sb.AppendLine($"[{i + 1}] {tags[i].Name}");
                 }
                 sb.AppendLine("```");
-                ReplyAsync(sb.ToString());
+                _replyTracker.SmartReplyAsync(Context, sb.ToString());
             }
             else
             {
                 var tag = TagService!.Data.FirstOrDefault(t => t.Name.Equals(subcmd, StringComparison.OrdinalIgnoreCase));
-                ReplyAsync(tag != null ? tag.Content : "**Tag not found!**");
+                _replyTracker.SmartReplyAsync(Context, tag != null ? tag.Content : "**Tag not found!**");
             }
 
-            return Task.CompletedTask;
+            return;
         }
     }
 }

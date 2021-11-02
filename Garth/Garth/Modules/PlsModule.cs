@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Garth.Services;
 
 namespace Garth.Modules
 {
     public class PlsModule : ModuleBase<SocketCommandContext>
     {
+        public ReplyTrackerService? _replyTracker { get; set; }
+
         [Command("pls")]
         public Task pls([Remainder]string text = null)
         {
@@ -34,7 +37,7 @@ namespace Garth.Modules
                 "C++20 guys are spoiled"
             };
             int item = new Random().Next(0, phrases.Length);
-            ReplyAsync(phrases[item]);
+            _replyTracker.SmartReplyAsync(Context, phrases[item]);
             return Task.CompletedTask;
         }
     }
