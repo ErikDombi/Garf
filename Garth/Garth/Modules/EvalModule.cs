@@ -112,7 +112,7 @@ namespace Garth.Modules
 
                 var result = await Evaluate(input);
                 var json = System.Text.Json.JsonSerializer.Serialize(result).Substring(0, Math.Min(result.ToString().Length, 2036));
-
+                
                 sw.Stop();
 
                 EmbedBuilder builder = new EmbedBuilder()

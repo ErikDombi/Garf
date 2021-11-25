@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Garth.Modules;
+using System.IO;
 
 namespace Garth
 {
@@ -80,7 +81,11 @@ namespace Garth
 
                 _client.Log += Log;
 
+#if DEBUG
+                var token = _configuration.TestingToken;
+#else
                 var token = _configuration.Token;
+#endif
 
                 if (token == null)
                     throw new Exception("Bot token not set in config.json");
@@ -95,25 +100,31 @@ namespace Garth
             }
         }
 
-        private Task InlineTagReply(SocketMessage message)
+        private async Task InlineTagReply(SocketMessage message)
         {
 
             var regexMatches = Regex.Matches(message.Content, "\\$+([A-Za-z0-9!.#@$%^&()]+)");
             
             if(regexMatches.Count > 0)
-                _replyTracker.DeleteAll(message.Id);
+                await _replyTracker.DeleteAll(message.Id);
 
             foreach (Match match in regexMatches)
             {
-                var tag = _tagService.Data.FirstOrDefault(x => x.Name.Equals(match.Groups[1].ToString(), StringComparison.CurrentCultureIgnoreCase));
-                if (tag == null)
-                    continue;
+                if (message.Channel is IGuildChannel channel)
+                {
+                    var tag = _tagService!.GetTag(channel.GuildId, match.Groups[1].ToString());
+                    if (tag == null)
+                        continue;
 
-                _replyTracker.SmartReplyAsync(message.Channel, message, tag.Content, disableEdit: true);
+                    if (!tag.IsFile)
+                        await _replyTracker!.SmartReplyAsync(message.Channel, message, tag.Content);
+                    else
+                    {
+                        await using MemoryStream stream = new(Convert.FromBase64String(tag.Content));
+                        await message.Channel.SendFileAsync(stream, tag.FileName);
+                    }
+                }
             }
-
-
-            return Task.CompletedTask;
         }
 
         private ServiceProvider ConfigureServices()

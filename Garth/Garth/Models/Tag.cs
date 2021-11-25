@@ -13,5 +13,9 @@ namespace Garth.Models
         public string CreatorName { get; set; }
         public ulong CreatorId { get; set; }
         public string CreationDate { get; set; } = DateTime.Now.ToString();
+        public bool IsFile { get; set; } = false;
+        public string FileName { get; set; } = string.Empty;
+        public bool Global { get; set; } = false;
+        public ulong Server { get; set; }
     }
 }
