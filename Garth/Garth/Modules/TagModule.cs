@@ -34,14 +34,18 @@ namespace Garth.Modules
         [Alias("t")]
         public async Task TagCommand(string subcmd, string name = null, [Remainder] string? text = null)
         {
-            if(subcmd.Equals("create", StringComparison.OrdinalIgnoreCase) || subcmd.Equals("add", StringComparison.OrdinalIgnoreCase)) {
+            if(subcmd.Equals("create", StringComparison.OrdinalIgnoreCase) ||
+               subcmd.Equals("add", StringComparison.OrdinalIgnoreCase) ||
+               subcmd.Equals("createglobal", StringComparison.OrdinalIgnoreCase) ||
+               subcmd.Equals("addglobal", StringComparison.OrdinalIgnoreCase))
+            {
                 if(string.IsNullOrWhiteSpace(name))
                 {
                     await _replyTracker!.SmartReplyAsync(Context, "**You need to supply a name for the tag!**");
                     return;
                 }
 
-                if(new string[] {"create", "delete", "info", "edit", "search", "add", "remove", "global"}.Contains(name.ToLower()))
+                if(new string[] {"create", "delete", "info", "edit", "search", "add", "remove", "global", "createglobal", "addglobal"}.Contains(name.ToLower()))
                 {
                     await _replyTracker!.SmartReplyAsync(Context, "**Invalid tag name!**");
                     return;
@@ -89,7 +93,9 @@ namespace Garth.Modules
                         CreatorName = Context.User.ToString(),
                         IsFile = true,
                         FileName = Context.Message.Attachments.FirstOrDefault()!.Filename,
-                        Server = Context.Guild.Id
+                        Server = Context.Guild.Id,
+                        Global = subcmd.Equals("createglobal", StringComparison.OrdinalIgnoreCase) ||
+                                 subcmd.Equals("addglobal", StringComparison.OrdinalIgnoreCase)
                     });
                 }
                 else
@@ -100,7 +106,9 @@ namespace Garth.Modules
                         Content = text!,
                         CreatorId = Context.User.Id,
                         CreatorName = Context.User.ToString(),
-                        Server = Context.Guild.Id
+                        Server = Context.Guild.Id,
+                        Global = subcmd.Equals("createglobal", StringComparison.OrdinalIgnoreCase) ||
+                                 subcmd.Equals("addglobal", StringComparison.OrdinalIgnoreCase)
                     });
                 }
 
@@ -123,11 +131,12 @@ namespace Garth.Modules
                 }
                 if(tag.CreatorId != Context.User.Id && (Context.User.Id != _configuration?.BotOwnerId))
                 {
-                    await _replyTracker!.SmartReplyAsync(Context, "**You do not have permission to delete this tag!");
+                    await _replyTracker!.SmartReplyAsync(Context, "**You do not have permission to delete this tag!**");
                     return;
                 }
                 TagService.Data.Remove(tag);
                 TagService.Save();
+
                 await Context.Message.AddReactionAsync(new Emoji("☑️"));
             }
             else if (subcmd.Equals("edit", StringComparison.OrdinalIgnoreCase))
@@ -230,6 +239,9 @@ namespace Garth.Modules
                         responseString.AppendLine("```d\n");
 
                         var pageTags = tags.Data.Where(t => t.Server == Context.Guild.Id || t.Global).Skip(startIndex).Take(10).ToList();
+                        if (pageTags.Count == 0)
+                            return "";
+
                         for (int i = 0; i < pageTags.Count; ++i)
                         {
                             responseString.AppendLine($"[{startIndex + i + 1}] {pageTags[i].Name}");

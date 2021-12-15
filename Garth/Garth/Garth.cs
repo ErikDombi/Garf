@@ -102,7 +102,12 @@ namespace Garth
 
         private async Task InlineTagReply(SocketMessage message)
         {
+            if(new Random().Next(0, 200) == 1)
+            {
+                await message.Channel.SendMessageAsync(PlsModule.GeneratePls());
+            }
 
+            if (message.Source != MessageSource.User) return;
             var regexMatches = Regex.Matches(message.Content, "\\$+([A-Za-z0-9!.#@$%^&()]+)");
             
             if(regexMatches.Count > 0)

@@ -12,15 +12,12 @@ namespace Garth.Modules
     {
         public ReplyTrackerService? _replyTracker { get; set; }
 
-        [Command("pls")]
-        public Task pls([Remainder]string text = null)
+        public static string GeneratePls()
         {
-            if (text != null)
-                return Task.CompletedTask;
-
-            string[] phrases = new[] { 
+            string[] phrases = new[] {
                 "so",
                 "go work on khronos",
+                "go work on expression evaluator",
                 "look at the zoom transcript",
                 "in the industry",
                 "Apple products are terrible",
@@ -34,11 +31,17 @@ namespace Garth.Modules
                 "We'll discuss that in tutorial",
                 "Java stole this from C++",
                 "Stroupstrup is a genius",
-                "C++20 guys are spoiled"
+                "C++20 guys are spoiled",
+                "fanshawe students tend to have a lot more, for lack of a better term, shit in their life to deal with"
             };
             int item = new Random().Next(0, phrases.Length);
-            _replyTracker.SmartReplyAsync(Context, phrases[item]);
-            return Task.CompletedTask;
+            return phrases[item];
+        }
+
+        [Command("pls")]
+        public async Task pls([Remainder]string text = null)
+        {
+            await _replyTracker!.SmartReplyAsync(Context, PlsModule.GeneratePls());
         }
     }
 }
