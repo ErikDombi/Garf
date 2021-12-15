@@ -100,10 +100,12 @@ namespace Garth
             }
         }
 
+        DateTime lastReply = DateTime.Now.AddMinutes(-5);
         private async Task InlineTagReply(SocketMessage message)
         {
-            if(new Random().Next(0, 200) == 1)
+            if(new Random().Next(0, _configuration.RandomOpinionChance) == 1 && DateTime.Now > lastReply)
             {
+                lastReply = DateTime.Now;
                 await message.Channel.SendMessageAsync(PlsModule.GeneratePls());
             }
 

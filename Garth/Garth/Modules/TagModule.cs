@@ -196,6 +196,7 @@ namespace Garth.Modules
             }
             else if (subcmd.Equals("global", StringComparison.OrdinalIgnoreCase))
             {
+                
                 if (string.IsNullOrWhiteSpace(name))
                 {
                     await _replyTracker!.SmartReplyAsync(Context, "**You need to supply a tag name!**");

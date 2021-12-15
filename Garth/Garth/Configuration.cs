@@ -13,6 +13,7 @@ namespace Garth
         public string TestingToken { get; set; } = String.Empty;
         public ulong BotOwnerId { get; set; } = 0;
         public string[] Prefixes { get; set; } = new[] { "g", "g++" };
+        public int RandomOpinionChance { get; set; } = 50;
 
         public static Configuration LoadConfiguration(string file = "config.json")
         {
