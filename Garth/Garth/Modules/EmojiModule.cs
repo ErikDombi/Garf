@@ -24,7 +24,7 @@ namespace Garth.Modules
         {
             var msg = await _replyTracker.SmartReplyAsync(Context, "Attempting mashup...");
 
-            //Build api query url
+            //Send query to API
             HttpClient client = new HttpClient();
             var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, query + $"&q={emoji1}_{emoji2}"));
 
@@ -32,6 +32,7 @@ namespace Garth.Modules
             if (!response.IsSuccessStatusCode)
             {
                 await msg.ModifyAsync(x=> x.Content = $"Request failed! ( error {response.StatusCode} )");
+                return;
             }
 
             //Request successful, check if response contains an emoji
