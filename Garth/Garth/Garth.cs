@@ -103,7 +103,7 @@ namespace Garth
         DateTime lastReply = DateTime.Now.AddMinutes(-5);
         private async Task InlineTagReply(SocketMessage message)
         {
-            if(new Random().Next(0, _configuration.RandomOpinionChance) == 1 && DateTime.Now > lastReply)
+            if(new Random().Next(0, _configuration.RandomOpinionChance) == 1 && DateTime.Now > lastReply.AddMinutes(5))
             {
                 lastReply = DateTime.Now;
                 await message.Channel.SendMessageAsync(PlsModule.GeneratePls());
